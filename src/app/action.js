@@ -104,33 +104,43 @@ export async function registerUser({ name, email, password, confirmPassword }) {
 // };
 
 export async function loginUser({ email, password }) {
-  // Input validation
   try {
+    // Input validation
     loginSchema.parse({ email, password });
+
+    await connectToDatabase();
+
+    const user = await User.findOne({ email });
+
+    // Validate user and password
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      // Custom error for invalid credentials
+      console.error('Invalid email or password attempt'); // Log error for debugging
+      throw new Error('Invalid email or password'); // Throw a specific error for invalid credentials
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Save refreshToken in the database
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Set cookies
+    cookies().set('accessToken', accessToken, { httpOnly: true, path: '/' });
+    cookies().set('refreshToken', refreshToken, { httpOnly: true, path: '/' });
+
+    return { accessToken };
   } catch (error) {
-    throw new Error(error.errors[0].message);
+    // Check for validation errors and handle them appropriately
+    if (error.name === 'ValidationError') {
+      console.error('Validation Error:', error); // Log validation errors
+      throw new Error('Invalid input data');
+    } else {
+      console.error('Server Error:', error); // Log server errors for further inspection
+      throw new Error('An error occurred while processing your request.');
+    }
   }
-
-  await connectToDatabase();
-
-  const user = await User.findOne({ email });
-
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    throw new Error('Invalid email or password');
-  }
-
-  const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
-
-  // Save refreshToken in the database
-  user.refreshToken = refreshToken;
-  await user.save();
-
-  // Set cookies
-  cookies().set('accessToken', accessToken, { httpOnly: true, path: '/' });
-  cookies().set('refreshToken', refreshToken, { httpOnly: true, path: '/' });
-
-  return { accessToken };
 }
 
 export async function refreshAction() {
