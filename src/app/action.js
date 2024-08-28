@@ -56,7 +56,7 @@ import { connectToDatabase } from "../lib/utils";
 // Server Action: registerUser
 export async function registerUser({ name, email, password, confirmPassword }) {
   try {
-    // Input validation
+    // Input validation with Zod
     registerSchema.parse({ name, email, password, confirmPassword });
 
     await connectToDatabase();
@@ -74,32 +74,22 @@ export async function registerUser({ name, email, password, confirmPassword }) {
 
     return { success: true }; // Return success response if registration is successful
   } catch (error) {
-    // Handle validation errors or other errors
-    console.error('Registration Error:', error); // Log errors for debugging
-    if (error.name === 'ValidationError') {
-      return { error: 'Invalid input data' }; // Return validation-specific error message
+    // Handle Zod validation errors
+    if (error.name === 'ZodError') {
+      console.error('Validation Error:', error); // Log validation errors for debugging
+      // Extract the first error message from Zod
+      return { error: error.errors[0].message };
     }
+
+    console.error('Registration Error:', error); // Log other errors for further inspection
     return { error: 'An error occurred while registering. Please try again later.' }; // Return a generic error message
   }
 }
 
-// export const loginUser = async (email, password) => {
-//   try {
-//     await signIn("credentials", {
-//       email,
-//       password,
-//       // redirect: true,
-//       // redirectTo: "/",
-//     });
-//   } catch (error) {
-//     return error.message;
-//   }
-// };
 
-// Server Action: loginUser
 export async function loginUser({ email, password }) {
   try {
-    // Input validation
+    // Input validation with Zod
     loginSchema.parse({ email, password });
 
     await connectToDatabase();
@@ -108,9 +98,8 @@ export async function loginUser({ email, password }) {
 
     // Validate user and password
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      // Return a specific error for invalid credentials
       console.error('Invalid email or password attempt'); // Log error for debugging
-      return { error: 'Invalid email or password' }; // Return error object instead of throwing
+      return { error: 'Invalid email or password' }; // Return a specific error object
     }
 
     const accessToken = generateAccessToken(user);
@@ -126,10 +115,15 @@ export async function loginUser({ email, password }) {
 
     return { success: true, accessToken };
   } catch (error) {
-    console.error('Server Error:', error); // Log server errors for further inspection
+    // Handle Zod validation errors
+    if (error.name === 'ZodError') {
+      console.error('Validation Error:', error); // Log validation errors for debugging
+      // Extract the first error message from Zod
+      return { error: error.errors[0].message };
+    }
 
-    // Return a generic error message
-    return { error: 'An error occurred while processing your request.' };
+    console.error('Login Error:', error); // Log other errors for further inspection
+    return { error: 'An error occurred while registering. Please try again later.' }; // Return a generic error message
   }
 }
 
