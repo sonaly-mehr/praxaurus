@@ -103,6 +103,7 @@ export async function registerUser({ name, email, password, confirmPassword }) {
 //   }
 // };
 
+// Server Action: loginUser
 export async function loginUser({ email, password }) {
   try {
     // Input validation
@@ -114,9 +115,9 @@ export async function loginUser({ email, password }) {
 
     // Validate user and password
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      // Custom error for invalid credentials
+      // Return a specific error for invalid credentials
       console.error('Invalid email or password attempt'); // Log error for debugging
-      throw new Error('Invalid email or password'); // Throw a specific error for invalid credentials
+      return { error: 'Invalid email or password' }; // Return error object instead of throwing
     }
 
     const accessToken = generateAccessToken(user);
@@ -130,16 +131,12 @@ export async function loginUser({ email, password }) {
     cookies().set('accessToken', accessToken, { httpOnly: true, path: '/' });
     cookies().set('refreshToken', refreshToken, { httpOnly: true, path: '/' });
 
-    return { accessToken };
+    return { success: true, accessToken };
   } catch (error) {
-    // Check for validation errors and handle them appropriately
-    if (error.name === 'ValidationError') {
-      console.error('Validation Error:', error); // Log validation errors
-      throw new Error('Invalid input data');
-    } else {
-      console.error('Server Error:', error); // Log server errors for further inspection
-      throw new Error('An error occurred while processing your request.');
-    }
+    console.error('Server Error:', error); // Log server errors for further inspection
+
+    // Return a generic error message
+    return { error: 'An error occurred while processing your request.' };
   }
 }
 
