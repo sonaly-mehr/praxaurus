@@ -53,41 +53,34 @@ import { connectToDatabase } from "../lib/utils";
 // };
 
 
+// Server Action: registerUser
 export async function registerUser({ name, email, password, confirmPassword }) {
-  // Input validation
   try {
+    // Input validation
     registerSchema.parse({ name, email, password, confirmPassword });
-  } catch (error) {
-    throw new Error(error.errors[0].message);
-  }
 
-  await connectToDatabase();
+    await connectToDatabase();
 
-  // Check if the email or username already exists
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    if (existingUser.email === email) {
-      throw new Error('Email is already registered');
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      console.error('Email is already registered'); // Log the error for debugging purposes
+      return { error: 'Email is already registered' }; // Return error response
     }
+
+    // Create new user
+    const newUser = new User({ name, email, password });
+    await newUser.save();
+
+    return { success: true }; // Return success response if registration is successful
+  } catch (error) {
+    // Handle validation errors or other errors
+    console.error('Registration Error:', error); // Log errors for debugging
+    if (error.name === 'ValidationError') {
+      return { error: 'Invalid input data' }; // Return validation-specific error message
+    }
+    return { error: 'An error occurred while registering. Please try again later.' }; // Return a generic error message
   }
-
-  // Create new user
-  const newUser = new User({ name, email, password });
-  await newUser.save();
-
-  // // Generate tokens
-  // const accessToken = generateAccessToken(newUser);
-  // const refreshToken = generateRefreshToken(newUser);
-
-  // // Save refreshToken in the user document
-  // newUser.refreshToken = refreshToken;
-  // await newUser.save();
-
-  // // Set cookies
-  // cookies().set('accessToken', accessToken, { httpOnly: true, path: '/' });
-  // cookies().set('refreshToken', refreshToken, { httpOnly: true, path: '/' });
-
-  // return { accessToken };
 }
 
 // export const loginUser = async (email, password) => {
