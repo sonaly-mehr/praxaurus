@@ -1,0 +1,73 @@
+export const News = [
+  {
+    img: "/assets/1.png",
+    title: "3 Simple Tips For Using Sports To Get Ahead Your",
+    tag: "Golf",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/2.png",
+    title: "Congratulations! Your SPORTS Is (Are) About To Stop Being Relevant",
+    tag: "Rugby",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/3.png",
+    title: "Learn Exactly How I Improved SPORTS In 2 Days",
+    tag: "Cycle",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/1.png",
+    title: "3 Simple Tips For Using Sports To Get Ahead Your",
+    tag: "Golf",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/2.png",
+    title: "Congratulations! Your SPORTS Is (Are) About To Stop Being Relevant",
+    tag: "Rugby",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/3.png",
+    title: "Learn Exactly How I Improved SPORTS In 2 Days",
+    tag: "Cycle",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/1.png",
+    title: "3 Simple Tips For Using Sports To Get Ahead Your",
+    tag: "Golf",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/2.png",
+    title: "Congratulations! Your SPORTS Is (Are) About To Stop Being Relevant",
+    tag: "Rugby",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+  {
+    img: "/assets/3.png",
+    title: "Learn Exactly How I Improved SPORTS In 2 Days",
+    tag: "Cycle",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+
+  {
+    img: "/assets/1.png",
+    title: "3 Simple Tips For Using Sports To Get Ahead Your",
+    tag: "Golf",
+    author: "By author",
+    date: "August 4, 2024",
+  },
+];
