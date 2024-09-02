@@ -67,8 +67,8 @@ export async function loginUser({ email, password }) {
 
     // Validate user and password
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      console.error('Invalid email or password attempt'); // Log error for debugging
-      return { error: 'Invalid email or password' }; // Return a specific error object
+      console.error('Invalid email or password attempt');
+      return { error: 'Invalid email or password' };
     }
 
     const accessToken = generateAccessToken(user);
@@ -78,29 +78,29 @@ export async function loginUser({ email, password }) {
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Set cookies without production-based logic
+    // Set cookies with SameSite=None and Secure attributes
     cookies().set('accessToken', accessToken, {
       httpOnly: true,
+      secure: true, // Ensure this is only true in HTTPS environments
       sameSite: 'None',
       path: '/',
     });
     cookies().set('refreshToken', refreshToken, {
       httpOnly: true,
+      secure: true, // Ensure this is only true in HTTPS environments
       sameSite: 'None',
       path: '/',
     });
 
     return { success: true, accessToken };
   } catch (error) {
-    // Handle Zod validation errors
     if (error.name === 'ZodError') {
-      console.error('Validation Error:', error); // Log validation errors for debugging
-      // Extract the first error message from Zod
+      console.error('Validation Error:', error);
       return { error: error.errors[0].message };
     }
 
-    console.error('Login Error:', error); // Log other errors for further inspection
-    return { error: 'An error occurred while registering. Please try again later.' }; // Return a generic error message
+    console.error('Login Error:', error);
+    return { error: 'An error occurred while registering. Please try again later.' };
   }
 }
 
@@ -109,16 +109,16 @@ export async function refreshAction() {
   const refreshToken = cookieStore.get('refreshToken')?.value;
 
   if (!refreshToken) {
-    console.error('No refresh token found in cookies'); // Debugging
+    console.error('No refresh token found in cookies');
     throw new Error('No refresh token provided');
   }
 
   let payload;
   try {
     payload = verifyRefreshToken(refreshToken);
-    console.log('Refresh Token Payload:', payload); // Debugging
+    console.log('Refresh Token Payload:', payload);
   } catch (error) {
-    console.error('Error verifying refresh token:', error); // Debugging
+    console.error('Error verifying refresh token:', error);
     throw new Error('Invalid refresh token');
   }
 
@@ -127,7 +127,7 @@ export async function refreshAction() {
   const user = await User.findById(payload.id);
 
   if (!user || user.refreshToken !== refreshToken) {
-    console.error('User not found or refresh token mismatch'); // Debugging
+    console.error('User not found or refresh token mismatch');
     throw new Error('Invalid refresh token');
   }
 
@@ -137,8 +137,8 @@ export async function refreshAction() {
   user.refreshToken = newRefreshToken;
   await user.save();
 
-  cookieStore.set('accessToken', newAccessToken, { httpOnly: true, path: '/' });
-  cookieStore.set('refreshToken', newRefreshToken, { httpOnly: true, path: '/' });
+  cookieStore.set('accessToken', newAccessToken, { httpOnly: true, secure: true, sameSite: 'None', path: '/' });
+  cookieStore.set('refreshToken', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'None', path: '/' });
 
   return { accessToken: newAccessToken };
 }
