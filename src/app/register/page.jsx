@@ -3,7 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import Link from "next/link";
-import { registerUser } from "../action";
+import { registerUser } from "../../app/services/auth/action";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";

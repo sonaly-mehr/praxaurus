@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { loginUser } from "../../../app/action";
+import { loginUser } from "../../../app/services/auth/action";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
@@ -24,7 +24,7 @@ const LoginForm = () => {
       setError(response.error);
     } else {
       toast.success("Logged in successfully");
-      router.push("/");
+      window.location.href = "/";
       setError("");
     }
   };

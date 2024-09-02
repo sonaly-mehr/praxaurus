@@ -1,35 +1,13 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { Button } from './button';
-import Link from 'next/link';
-import { getUser, logoutUser } from '../../app/action'; // Correct path to your action
-import { toast } from 'sonner';
+"use client";
+import React from "react";
+import { Button, buttonVariants } from "./button";
+import Link from "next/link";
+import { useUser } from "../../contextApi/UserContext";
+import { Sparkles } from "lucide-react";
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
-  const [userLogout, setUserLogout] = useState(null)
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getUser();
-        setUser(userData);
-      } catch (error) {
-        // toast.error(error.message);
-      }
-    };
-    // const logout = async()=> {
-    //   const data = await logoutUser();
-    //   setUserLogout(data)
-    // }
-
-    fetchUser();
-  }, []);
-
-  const logoutHandler = async()=> {
-    await logoutUser();
-    toast.success("Logged out!")
-  }
+  const { user, logoutHandler } = useUser();
+  console.log("user info:", user);
 
   return (
     <div className="container mx-auto">
@@ -37,10 +15,38 @@ const Navbar = () => {
         <div>
           <h4>LOGO</h4>
         </div>
+
+        <div>
+          {user?.plan === "premium" && (
+            <div className="flex gap-4">
+              <Link
+                rel="noreferrer noopener"
+                href={process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL}
+                target="_blank"
+                className={`text-base bg-accent ${buttonVariants({
+                  variant: "ghost",
+                })}`}
+              >
+                Billing Portal
+              </Link>
+              <Button
+                asChild
+                className="flex gap-1 items-center bg-gradient-custom font-bold"
+              >
+                <div>
+                  <Link href="/articles">Premium</Link>
+                  <Sparkles width={16} height={16} className="text-[#FFD866]" />
+                </div>
+              </Button>
+            </div>
+          )}
+        </div>
         <div>
           {user ? (
             <Button asChild variant="destructive">
-              <Link href="/login" onClick={logoutHandler}>Logout</Link>
+              <Link href="/login" onClick={logoutHandler}>
+                Logout
+              </Link>
             </Button>
           ) : (
             <Button asChild>

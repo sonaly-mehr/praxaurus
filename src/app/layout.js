@@ -1,9 +1,8 @@
-// import { AuthProvider } from "./Providers";
-// import Navbar from "@/components/ui/Navbar";
-// import {AuthProvider} from './Providers'
 import { Toaster } from "sonner";
 import "./globals.css";
 import { Inter } from "next/font/google";
+import { UserProvider } from "../contextApi/UserContext";
+import Navbar from "../components/ui/Navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -14,13 +13,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <UserProvider>
       <body className={inter.className}>
-        {/* <AuthProvider> */}
-          {/* <Navbar/> */}
+          <Navbar/>
           {children}
-          {/* </AuthProvider> */}
           <Toaster />
       </body>
+      </UserProvider>
     </html>
   );
 }

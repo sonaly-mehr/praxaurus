@@ -1,59 +1,16 @@
 "use server";
 
-// import { hash } from "bcryptjs";
-import User from "../models/user";
+import User from "../../../models/user";
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
-import { loginSchema, registerSchema } from '../lib/validation';
-import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from '../lib/jwt';
-// import { signIn } from "next-auth/react";  // Correct import
-import { connectToDatabase } from "../lib/utils";
+import { loginSchema, registerSchema } from '../../../lib/validation';
+import { generateAccessToken, generateRefreshToken, verifyAccessToken, verifyRefreshToken } from '../../../lib/jwt';
+import { connectToDatabase } from "../../../lib/utils";
+import Stripe from "stripe";
 
-// export const registerUser = async (prevState, formData) => {
-//   const name = formData.get("name");
-//   const email = formData.get("email");
-//   const password = formData.get("password");
-
-//   if (!email || !password || !name) {
-//     const state = {
-//       status: "error",
-//       message: "Please provide all fields!",
-//     };
-//     return state;
-//   }
-
-//   //connect database
-//   await connectToDatabase();
-
-//   const user = await User.findOne({ email });
-
-//   if (user) {
-//     const state = {
-//       status: "error",
-//       message: "User already exist!",
-//     };
-//     return state;
-//   }
-
-//   const hashedPassword = await hash(password, 10);
-
-//   //create user
-//   const userCreated = await User.create({
-//     name,
-//     email,
-//     password: hashedPassword,
-//   });
-//   if (userCreated) {
-//     const state = {
-//       status: "success",
-//       message: "User Registered Successfully!",
-//     };
-//     return state;
-//   }
-// };
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 
-// Server Action: registerUser
 export async function registerUser({ name, email, password, confirmPassword }) {
   try {
     // Input validation with Zod
@@ -68,8 +25,20 @@ export async function registerUser({ name, email, password, confirmPassword }) {
       return { error: 'Email is already registered' }; // Return error response
     }
 
-    // Create new user
-    const newUser = new User({ name, email, password });
+    // Create Stripe customer
+    const customer = await stripe.customers.create({
+      email,
+      name,
+    });
+
+    // Create new user with Stripe customer ID
+    const newUser = new User({
+      name,
+      email,
+      password,
+      stripeCustomerId: customer.id, // Save Stripe customer ID
+    });
+
     await newUser.save();
 
     return { success: true }; // Return success response if registration is successful
@@ -109,9 +78,19 @@ export async function loginUser({ email, password }) {
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Set cookies
-    cookies().set('accessToken', accessToken, { httpOnly: true, path: '/' });
-    cookies().set('refreshToken', refreshToken, { httpOnly: true, path: '/' });
+    // Set cookies with SameSite=None and Secure attributes
+    cookies().set('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
+      path: '/',
+    });
+    cookies().set('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
+      path: '/',
+    });
 
     return { success: true, accessToken };
   } catch (error) {
@@ -206,4 +185,38 @@ export async function logoutUser() {
   cookieStore.set('refreshToken', '', { maxAge: -1 });
 
   return { message: 'Logged out successfully' };
+}
+
+
+// Server Action: subscribeUser
+export async function subscribeUser({ userId, priceId }) {
+  try {
+    await connectToDatabase();
+
+    // Find the user in the database
+    const user = await User.findById(userId);
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    // Create a Stripe checkout session for the subscription
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      customer: user.stripeCustomerId,
+      line_items: [
+        {
+          price: priceId, // Replace with your Stripe Price ID
+          quantity: 1,
+        },
+      ],
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cancel`,
+    });
+
+    return { url: session.url }; // Return the checkout session URL
+  } catch (error) {
+    console.error('Subscription Error:', error);
+    return { error: 'An error occurred while creating the subscription.' };
+  }
 }
