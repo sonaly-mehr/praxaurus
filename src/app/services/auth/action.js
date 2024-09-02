@@ -78,16 +78,14 @@ export async function loginUser({ email, password }) {
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Set cookies with SameSite=None and Secure attributes
+    // Set cookies without production-based logic
     cookies().set('accessToken', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
       sameSite: 'None',
       path: '/',
     });
     cookies().set('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
       sameSite: 'None',
       path: '/',
     });
