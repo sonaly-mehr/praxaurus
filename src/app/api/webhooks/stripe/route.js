@@ -1,25 +1,28 @@
 import { stripe } from "../../../../lib/stripe";
 import User from "../../../../models/user";
 import Subscription from "../../../../models/subscription";
-
+import { connectToDatabase } from "../../../../lib/utils"; // 
 
 export async function POST(req) {
+  await connectToDatabase(); // Ensure the database connection is established
+
   const headers = {
-    'Access-Control-Allow-Origin': 'https://praxaurus.vercel.app', // Replace with your frontend domain
-    'Access-Control-Allow-Methods': 'GET, POST',
+    'Access-Control-Allow-Origin': 'https://praxaurus.vercel.app',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
+
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
   const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-  
+
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(body, sig, WEBHOOK_SECRET);
   } catch (err) {
     console.error("Webhook signature verification failed.", err.message);
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    return new Response(`Webhook Error: ${err.message}`, { status: 400, headers });
   }
 
   try {
@@ -101,25 +104,48 @@ export async function POST(req) {
         }
         break;
 
+      case "customer.subscription.updated":
+        const updatedSubscription = event.data.object;
+        const updatedUser = await User.findOne({ customerId: updatedSubscription.customer });
+
+        if (updatedUser) {
+          await Subscription.findOneAndUpdate(
+            { userId: updatedUser._id },
+            {
+              userId: updatedUser._id,
+              endDate: new Date(updatedSubscription.current_period_end * 1000),
+              plan: "premium",
+              period: updatedSubscription.items.data[0].price.recurring.interval,
+            },
+            { upsert: true, new: true }
+          );
+          
+          console.log(`Subscription updated for user ${updatedUser._id}`);
+        } else {
+          console.error("User not found for the updated subscription.");
+        }
+        break;
+
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
   } catch (error) {
     console.error("Error handling event", error);
-    return new Response("Webhook Error", { status: 400 });
+    return new Response("Webhook Error", { status: 400, headers });
   }
 
-  return new Response("Webhook received", { status: 200 });
+  return new Response("Webhook received", { status: 200, headers });
 }
 
-
 export async function OPTIONS(req) {
+  const headers = {
+    'Access-Control-Allow-Origin': 'https://praxaurus.vercel.app',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+
   return new Response(null, {
     status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': 'https://praxaurus.vercel.app', // Replace with your frontend domain
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
+    headers,
   });
 }
