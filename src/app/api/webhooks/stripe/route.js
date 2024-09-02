@@ -5,7 +5,7 @@ import Subscription from "../../../../models/subscription";
 
 export async function POST(req) {
   const headers = {
-    'Access-Control-Allow-Origin': 'https://www.praxaurus.vercel.app/', // Replace with your frontend domain
+    'Access-Control-Allow-Origin': 'https://praxaurus.vercel.app', // Replace with your frontend domain
     'Access-Control-Allow-Methods': 'GET, POST',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
@@ -117,7 +117,7 @@ export async function OPTIONS(req) {
   return new Response(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': 'https://www.praxaurus.vercel.app/', // Replace with your frontend domain
+      'Access-Control-Allow-Origin': 'https://praxaurus.vercel.app', // Replace with your frontend domain
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
