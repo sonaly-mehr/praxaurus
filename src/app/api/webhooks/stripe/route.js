@@ -2,11 +2,17 @@ import { stripe } from "../../../../lib/stripe";
 import User from "../../../../models/user";
 import Subscription from "../../../../models/subscription";
 
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
 export async function POST(req) {
+  const headers = {
+    'Access-Control-Allow-Origin': 'https://www.praxaurus.vercel.app/', // Replace with your frontend domain
+    'Access-Control-Allow-Methods': 'GET, POST',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
+  const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+  
   let event;
 
   try {
@@ -104,4 +110,16 @@ export async function POST(req) {
   }
 
   return new Response("Webhook received", { status: 200 });
+}
+
+
+export async function OPTIONS(req) {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': 'https://www.praxaurus.vercel.app/', // Replace with your frontend domain
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
 }
