@@ -2,6 +2,11 @@ import { stripe } from "../../../../lib/stripe";
 import User from "../../../../models/user";
 import Subscription from "../../../../models/subscription";
 
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export async function POST(req) {
   const headers = {
@@ -9,7 +14,9 @@ export async function POST(req) {
     'Access-Control-Allow-Methods': 'GET, POST',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
-  const body = await req.text();
+  const buf = await req.arrayBuffer();
+  const body = Buffer.from(buf);
+  // const body = await req.text();
   const sig = req.headers.get("stripe-signature");
   const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
   
