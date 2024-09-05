@@ -11,7 +11,8 @@ const UserSchema = new mongoose.Schema({
   customerId: { type: String, unique: true },
   subscription: { type: mongoose.Schema.Types.ObjectId, ref: 'Subscription' },
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' } // Added role field
 });
 
 // Password hashing before saving user

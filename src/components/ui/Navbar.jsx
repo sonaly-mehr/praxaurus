@@ -15,8 +15,15 @@ const Navbar = () => {
         <div>
           <h4>LOGO</h4>
         </div>
-
         <div>
+          <ul className="flex gap-5 capitalize items-center">
+            <li><Link href="/news">News</Link></li>
+            <li><Link href="/profile">Profile</Link></li>
+            <li><Link href="/ai-chat">Ai Chat</Link></li>
+          </ul>
+        </div>
+
+        {/* <div>
           {user?.plan === "premium" && (
             <div className="flex gap-4">
               <Link
@@ -40,7 +47,7 @@ const Navbar = () => {
               </Button>
             </div>
           )}
-        </div>
+        </div> */}
         <div>
           {user ? (
             <Button asChild variant="destructive">
