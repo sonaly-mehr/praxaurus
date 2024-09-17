@@ -18,7 +18,8 @@ export async function generateResetToken(email) {
   await user.save();
 
   // Create the reset link
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const production = process.env.NEXT_PUBLIC_SERVER
+  const resetLink = `${production == production ? process.env.NEXT_PUBLIC_URL : 'http://localhost:3000'}/reset-password?token=${resetToken}`;
 
   // Send the reset email
   await sendResetEmail(user.email, resetLink);
