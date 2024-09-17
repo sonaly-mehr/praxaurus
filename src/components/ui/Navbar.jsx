@@ -13,13 +13,21 @@ const Navbar = () => {
     <div className="container mx-auto">
       <div className="flex justify-between items-center my-5">
         <div>
-          <h4>LOGO</h4>
+          <Link href="/">LOGO</Link>
         </div>
         <div>
           <ul className="flex gap-5 capitalize items-center">
-            <li><Link href="/news">News</Link></li>
-            <li><Link href="/profile">Profile</Link></li>
-            <li><Link href="/ai-chat">Ai Chat</Link></li>
+            <li>
+              <Link href="/news">News</Link>
+            </li>
+            {user && (
+              <li>
+                <Link href="/profile">Profile</Link>
+              </li>
+            )}
+            <li>
+              <Link href="/ai-chat">Ai Chat</Link>
+            </li>
           </ul>
         </div>
 

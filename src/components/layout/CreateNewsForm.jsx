@@ -25,7 +25,8 @@ import {
 const categories = ["golf", "cycle", "rugby"];
 
 export default function CreateNewsForm() {
-  const [loading, setLoading] = useState(null);
+  const [loading, setLoading] = useState(false); // Track loading state
+  const [dialogOpen, setDialogOpen] = useState(false); // Track dialog open/close state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(categories[0]);
@@ -38,7 +39,7 @@ export default function CreateNewsForm() {
 
     const formData = new FormData();
     formData.append("name", name);
-    formData.append("name", description);
+    formData.append("description", description);
     formData.append("category", category);
     formData.append("author", author);
     formData.append("image", image);
@@ -60,19 +61,24 @@ export default function CreateNewsForm() {
         setCategory(categories[0]);
         setAuthor("");
         setImage(null);
+        setDialogOpen(false); // Close the dialog
         router.refresh(); // Refresh the page or do any other UI update
       } else {
         toast.error(result.message);
+        setLoading(false);
       }
     } catch (error) {
       toast.error(error.message);
+      setLoading(false);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-custom text-base">Create News</Button>
+        <Button onClick={() => setDialogOpen(true)} className="bg-gradient-custom text-base">
+          Create News
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -89,11 +95,12 @@ export default function CreateNewsForm() {
             required
           />
           <Select
+            className="w-full"
             value={category}
             onValueChange={(value) => setCategory(value)}
             required
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="">
               <SelectValue placeholder="Select a Category" />
             </SelectTrigger>
             <SelectContent>
@@ -119,7 +126,9 @@ export default function CreateNewsForm() {
             onChange={(e) => setImage(e.target.files[0])}
             required
           />
-          <Button type="submit"> {loading ? "Submitting.." : "Submit"}</Button>
+          <Button type="submit">
+            {loading ? "Submitting.." : "Submit"}
+          </Button>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>

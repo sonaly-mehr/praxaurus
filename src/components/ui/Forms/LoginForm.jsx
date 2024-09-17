@@ -51,7 +51,9 @@ const LoginForm = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+           <Link href="/forgot-password" className="text-[13px] flex justify-end text-black hover:text-red-500">Forgot password?</Link>
         </div>
+       
       </div>
 
       {error && <div className="error-message">{error}</div>}

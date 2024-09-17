@@ -5,11 +5,21 @@ import News from "../../../../models/news";
 // GET method to fetch a single news entry for editing
 export async function GET(req, { params }) {
   await connectToDatabase();
+  
   const { id } = params;
+
+  if (!id) {
+    return NextResponse.json({ status: 400, message: "Invalid or missing ID" });
+  }
 
   try {
     const news = await News.findById(id);
-    return NextResponse.json(news);
+
+    if (!news) {
+      return NextResponse.json({ status: 404, message: "News not found" });
+    }
+
+    return NextResponse.json({ status: 200, data: news });
   } catch (error) {
     console.error("Error fetching news:", error);
     return NextResponse.json({ status: 500, message: "Error fetching news" });
