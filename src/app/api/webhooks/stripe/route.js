@@ -1,5 +1,5 @@
 import { stripe } from "../../../../lib/stripe";
-import User from "../../../../models/user";
+import User from "../../../../models/users";
 import Subscription from "../../../../models/subscription";
 
 export async function POST(req) {

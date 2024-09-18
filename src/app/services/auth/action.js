@@ -1,6 +1,6 @@
 "use server";
 
-import User from "../../../models/user";
+import User from "../../../models/users";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { loginSchema, registerSchema } from "../../../lib/validation";
