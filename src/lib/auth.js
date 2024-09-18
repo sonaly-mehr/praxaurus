@@ -1,4 +1,4 @@
-import User from '../models/user';
+import User from '../models/users';
 import { sendResetEmail } from './sendResetEmail';
 
 import crypto from 'crypto';
